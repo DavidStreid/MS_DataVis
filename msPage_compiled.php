@@ -2,76 +2,12 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Search Engine</title>
-
+        <title>Multiple Sclerosis Drug Information Page</title>
         <!--Adding the d3 javaascript-->
         <script type="text/javascript" src="d3.min.js"></script>
         <!--Adding the stylesheet for jquery-->
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
-        <style type="text/css">
-            /*Modify Rectangles for tooltip - small overlays over data*/
-            rect {
-                -moz-transition: all 0.3s;
-                -o-transition: all 0.3s;
-                -webkit-transition: all 0.3s;
-                transition: all 0.3s;
-            }
-            /*hover function*/
-            rect:hover {
-                fill: blue;
-            }
-            #tooltip {
-                position: absolute;
-                width: 40px;
-                height: 20px;
-                padding: 10px;
-                background-color: white;
-                -webkit-border-radius: 10px;
-                -moz-border-radius: 10px;
-                border-radius: 10px;
-                -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-                -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-                box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-                pointer-events: none;
-            }
-
-            #tooltip.hidden {
-                display: none;
-            }
-
-            #tooltip p {
-                margin: 0;
-                font-family: sans-serif;
-                font-size: 30px;
-                line-height: 20px;
-            }
-
-            body {
-                background-image:url(gray_jean/gray_jean.png);
-            }
-
-            h1 {
-                position: relative;
-                left: 1%;
-                top: 2%;
-                font-size: 50px;
-                font-family: sans-serif
-            }
-
-            .axis path,
-
-            .axis line {
-                fill: none;
-                stroke: black;
-                shape-rendering: crispEdges;
-            }
-
-            .axis text {
-                font-family: sans-serif;
-                font-size: 15px;
-            }
-        </style>
-
+        <link rel="stylesheet" type="text/css" href="msStyle.css">
     </head>
     <body>
         <div>

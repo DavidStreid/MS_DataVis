@@ -71,23 +71,23 @@
                 });
                 
                 var yScale = d3.scale.linear()
-                .domain([0, maxHeight])
-                .range([0, h]);
+                    .domain([0, maxHeight])
+                    .range([0, h-buffer]);
                 
                 var yAxisScale = d3.scale.linear()
-                .domain([0, maxHeight])
-                .range([h, 0]);
+                    .domain([0, maxHeight])
+                    .range([h-buffer, 0]);
                 
                 var xScale = d3.scale.linear()
-                .domain([minYear, maxYear])
-                .range([buffer, w]);
+                    .domain([minYear, maxYear])
+                    .range([buffer, w]);
                 
                 var svg = d3.select("body")
-                .append("svg")
-                .attr({
-                    width: w,
-                    height: h,
-                });
+                    .append("svg")
+                    .attr({
+                        width: w,
+                        height: h,
+                    });
                 
                 //Function to make Bars
                 var makeBars = function() {
@@ -101,9 +101,9 @@
                             if(!isNaN(parseInt(d[1]))) {return (yScale(parseInt(d[1])))}
                         },
                         fill: function(d){
-                            return "rgb(10, 150, 100)";
+                            return "rgb(10, 100, 100)";
                         },
-                        y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-(yScale(parseInt(d[1])))}},
+                        y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-buffer-(yScale(parseInt(d[1])))}},
                         x: function(d){ if(!isNaN(parseInt(d[0]))) {
                             return xScale(parseInt(d[0]))}},
                     })
@@ -136,7 +136,7 @@
                         y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-labelBuffer}}, 
                         x: function(d){ if(!isNaN(parseInt(d[0]))) {return xScale(parseInt(d[0])) + labelBuffer}},
                         "font-size": 20,
-                        fill: "white" 
+                        fill: "black" 
                     })
                 }
                 makeBars();
@@ -193,6 +193,7 @@
 
                 //Define Variables
                 var buffer = 50;
+                var labelBuffer = 20;
                 var barWidth = 20;
                 var barBuffer = 5
                 var w = (barWidth+barBuffer)*pL[0].length; // Width to include every entry
@@ -210,11 +211,11 @@
 
                 var yScale = d3.scale.linear()
                 .domain([0, maxHeight])
-                .range([0, h]);
+                .range([0, h-labelBuffer]);
 
                 var yAxisScale = d3.scale.linear()
                 .domain([0, maxHeight])
-                .range([h, 0]);
+                .range([h-labelBuffer, 0]);
 
                 var xScale = d3.scale.linear()
                 .domain([0, maxWidth])
@@ -239,9 +240,9 @@
                             return (yScale(parseInt(d[1])))
                         },
                         fill: function(d){
-                            return "rgb(10, 150, 100)";
+                            return "rgb(10, 100, 100)";
                         },
-                        y: function(d){return h-(yScale(parseInt(d[1])))},
+                        y: function(d){return h-labelBuffer-(yScale(parseInt(d[1])))},
                         x: function(d,j) {return xScale(j)} 
                     })
                     //Adding the mouseOver function - Hover to highlight
@@ -269,12 +270,12 @@
                     .data(pL[0])
                     .enter()
                     .append("text")
-                    .text(function(d) {return d[0]})
+                    .text(function(d) {if (parseInt(d[0])%10 == 0) return d[0]})
                     .attr({
                         x: function(d,j) {return xScale(j) + barBuffer}, 
                         y: h-barBuffer,//function(d,j) {return h-(yScale(parseInt(d[1])))},
                         "font-size": 15,
-                        fill: "white" 
+                        fill: "black" 
                     })
                 }
                 makeBars();
@@ -345,11 +346,11 @@
 
                 var yScale = d3.scale.linear()
                 .domain([0, maxHeight])
-                .range([0, h]);
+                .range([0, h-labelBuffer]);
 
                 var yAxisScale = d3.scale.linear()
                 .domain([0, maxHeight])
-                .range([h, 0]);
+                .range([h-labelBuffer, 0]);
 
                 var xScale = d3.scale.linear()
                 .domain([0, maxWidth])
@@ -374,9 +375,9 @@
                             if(!isNaN(parseInt(d[1]))) {return (yScale(parseInt(d[1])))}
                         },
                         fill: function(d){
-                            return "rgb(10, 150, 100)";
+                            return "rgb(10, 100, 100)";
                         },
-                        y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-(yScale(parseInt(d[1])))}},
+                        y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-labelBuffer-(yScale(parseInt(d[1])))}},
                         x: function(d){ 
                             if(!isNaN(parseInt(d[0]))) {
                                 return xScale(parseInt(d[0]))
@@ -424,7 +425,7 @@
                             }
                         },
                         "font-size": 20,
-                        fill: "white" 
+                        fill: "black" 
                     })
                 }
                 makeBars();
@@ -473,7 +474,7 @@
                         echo json_encode($dXList);
                     ?>
                 ];
-
+                
                 var w = 2000
                 var barHeight = 30
                 var buffer = 5
@@ -518,7 +519,7 @@
                         },
                         height: barHeight-buffer,
                         fill: function(d){
-                            return "rgb(10, 150, " + (Math.floor((d[2]/2) * 150)) + ")";
+                            return "rgb(10, 50, 250)";
                         },
                         y: function(d, j) {return (yScale(j%12))}, // Adjust input for proper spacing
                         x: function(d) {
@@ -569,7 +570,7 @@
                     .attr({
                         y: function(d, j) {
                             if (d[1] == ""){
-                                return yScale(j%12+1.75)
+                                return yScale(1)
                             }
                             else{return yScale(j%12+0.75)}
                         },
@@ -601,6 +602,8 @@
 
                 makeBars();
                 makeLabels();
+                
+
             </script>
         </div>
 
@@ -680,7 +683,7 @@
                         },
                         height: barHeight-buffer,
                         fill: function(d){
-                            return "rgb(10, 150, " + (Math.floor((d[2]/2) * 150)) + ")";
+                            return "rgb(250, 20, 50)";
                         },
                         y: function(d, j) {return (yScale(j%12))}, // Adjust input for proper spacing
                         x: function(d) {
@@ -731,7 +734,7 @@
                     .attr({
                         y: function(d, j) {
                             if (d[1] == ""){
-                                return yScale(j%12+1.75)
+                                return yScale(1)
                             }
                             else{return yScale(j%12+0.75)}
                         },
@@ -757,10 +760,8 @@
                         },
                         "font-size": 20,
                         fill: "black",
-
                     })
-                }
-                
+                }  
                 makeBars()
                 makeLabels()
             </script>

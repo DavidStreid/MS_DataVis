@@ -174,7 +174,7 @@
                     //Adding the mouseOver function - Hover to highlight
                     .on("mouseover", function(d) {
                         var xPosition = parseFloat(d3.select(this).attr("x"));
-                        var yPosition = parseFloat(d3.select(this).attr("y")) + 135;
+                        var yPosition = parseFloat(d3.select(this).attr("y")) + 135; // Correcting Value
                         
                         d3.select("#tooltip")
                         .style("left", xPosition + "px")
@@ -311,7 +311,7 @@
                     //Adding the mouseOver function - Hover to highlight
                     .on("mouseover", function(d) {
                         var xPosition = parseFloat(d3.select(this).attr("x"));
-                        var yPosition = parseFloat(d3.select(this).attr("y"))+h*2+85;
+                        var yPosition = parseFloat(d3.select(this).attr("y"))+h*2+85; // Correcting Value
 
                         d3.select("#tooltip")
                         .style("left", xPosition + "px")
@@ -453,7 +453,7 @@
                     //Adding the mouseOver function - Hover to highlight
                     .on("mouseover", function(d) {
                         var xPosition = parseFloat(d3.select(this).attr("x"));
-                        var yPosition = parseFloat(d3.select(this).attr("y"))+4*h+40;
+                        var yPosition = parseFloat(d3.select(this).attr("y"))+4*h+40; // Correcting Value
 
                         d3.select("#tooltip")
                         .style("left", xPosition + "px")
@@ -541,9 +541,9 @@
                 var w = 2000
                 var barHeight = 30
                 var buffer = 5
-                var barBuffer = 200
+                var barBuffer = 20
                 var h = barHeight*dL[0].length/3
-                var textBuffer = 0
+                var textBuffer = 400
 
                 var sectionSize = (w-buffer)/3 - 100
 
@@ -566,7 +566,7 @@
 
                 var xScale = d3.scale.linear()
                     .domain([0, maxWidth])
-                    .range([buffer, buffer+sectionSize]);
+                    .range([buffer, buffer+sectionSize-textBuffer]);
 
                 //Function to make Bars
                 var makeBars = function() { 
@@ -587,19 +587,19 @@
                         y: function(d, j) {return (yScale(j%12))}, // Adjust input for proper spacing
                         x: function(d) {
                             if (dL[0].indexOf(d) < 12){
-                                return textBuffer;                           
+                                return textBuffer;                    
                             }
                             else if (dL[0].indexOf(d) < 24){
-                                return textBuffer*2 + sectionSize + barBuffer;
+                                return sectionSize + textBuffer;
                             }
-                            else{ return textBuffer*3 + sectionSize*2 + barBuffer} 
+                            else{return sectionSize*2 + textBuffer} 
                         } 
                     })
 
                     //Adding the mouseOver function - Hover to highlight
                     .on("mouseover", function(d) {
                         var xPosition = parseFloat(d3.select(this).attr("x"));//+parseFloat(d3.select(this).attr("width"));
-                        var yPosition = parseFloat(d3.select(this).attr("y"))+6*h-30;
+                        var yPosition = parseFloat(d3.select(this).attr("y"))+6*h + 85; // Correcting Value
 
                         d3.select("#tooltip")
                         .style("left", xPosition + "px")
@@ -640,21 +640,21 @@
                         x: function(d) {
                             if (d[1] == ""){
                                 if (dL[0].indexOf(d) == 0 ){
-                                    return textBuffer;                           
+                                    return buffer;                           
                                 }
                                 else if (dL[0].indexOf(d) == 12){
-                                    return textBuffer*2 + sectionSize + barBuffer;
+                                    return sectionSize;
                                 }
-                                else{ return textBuffer*3 + sectionSize*2 + barBuffer} 
+                                else{ return sectionSize*2} 
                             } 
                             else{ 
                                 if (dL[0].indexOf(d) < 12){
-                                    return textBuffer +     xScale(parseInt(d[2]));                    
+                                    return buffer;                    
                                 }
                                 else if (dL[0].indexOf(d) < 24){
-                                    return textBuffer + sectionSize + barBuffer + xScale(parseInt(d[2]));
+                                    return sectionSize + buffer;
                                 }
-                                else{ return textBuffer*2 + sectionSize*2 + barBuffer + xScale(parseInt(d[2]))} 
+                                else{ return sectionSize*2} 
                             } 
                         },
                         "font-size": 20,
@@ -703,9 +703,9 @@
                 var w = 2000
                 var barHeight = 30
                 var buffer = 5
-                var barBuffer = 200
+                var barBuffer = 20
                 var h = barHeight*rxL[0].length/3
-                var textBuffer = 0
+                var textBuffer = 400
 
                 var sectionSize = (w-buffer)/3 - 100
 
@@ -728,7 +728,7 @@
 
                 var xScale = d3.scale.linear()
                 .domain([0, maxWidth])
-                .range([buffer, buffer+sectionSize]);
+                .range([buffer, buffer+sectionSize-textBuffer]);
 
                 //Function to make Bars
                 var makeBars = function() { 
@@ -749,19 +749,19 @@
                         y: function(d, j) {return (yScale(j%12))}, // Adjust input for proper spacing
                         x: function(d) {
                             if (rxL[0].indexOf(d) < 12){
-                                return textBuffer;                           
+                                return textBuffer;                    
                             }
                             else if (rxL[0].indexOf(d) < 24){
-                                return textBuffer*2 + sectionSize + barBuffer;
+                                return sectionSize + textBuffer;
                             }
-                            else{ return textBuffer*3 + sectionSize*2 + barBuffer} 
+                            else{return sectionSize*2 + textBuffer} 
                         } 
                     })
 
                     //Adding the mouseOver function - Hover to highlight
                     .on("mouseover", function(d) {
-                        var xPosition = parseFloat(d3.select(this).attr("x"));//+parseFloat(d3.select(this).attr("width"));
-                        var yPosition = parseFloat(d3.select(this).attr("y"))+7*h+90;
+                        var xPosition = parseFloat(d3.select(this).attr("x"));
+                        var yPosition = parseFloat(d3.select(this).attr("y"))+7*h + 210; // Correcting Value
 
                         d3.select("#tooltip")
                         .style("left", xPosition + "px")
@@ -802,21 +802,21 @@
                         x: function(d) {
                             if (d[1] == ""){
                                 if (rxL[0].indexOf(d) == 0 ){
-                                    return textBuffer;                           
+                                    return buffer;                           
                                 }
                                 else if (rxL[0].indexOf(d) == 12){
-                                    return textBuffer*2 + sectionSize + barBuffer;
+                                    return sectionSize;
                                 }
-                                else{ return textBuffer*3 + sectionSize*2 + barBuffer} 
+                                else{ return sectionSize*2} 
                             } 
                             else{ 
                                 if (rxL[0].indexOf(d) < 12){
-                                    return textBuffer +     xScale(parseInt(d[2]));                    
+                                    return buffer;                    
                                 }
                                 else if (rxL[0].indexOf(d) < 24){
-                                    return textBuffer + sectionSize + barBuffer + xScale(parseInt(d[2]));
+                                    return sectionSize + buffer;
                                 }
-                                else{ return textBuffer*2 + sectionSize*2 + barBuffer + xScale(parseInt(d[2]))} 
+                                else{ return sectionSize*2} 
                             } 
                         },
                         "font-size": 20,
@@ -824,8 +824,9 @@
 
                     })
                 }
-                makeBars();
-                makeLabels();
+                
+                makeBars()
+                makeLabels()
             </script>
         </div>
     </body>

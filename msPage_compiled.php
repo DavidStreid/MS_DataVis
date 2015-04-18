@@ -110,7 +110,7 @@
                     //Adding the mouseOver function - Hover to highlight
                     .on("mouseover", function(d) {
                         var xPosition = parseFloat(d3.select(this).attr("x"));
-                        var yPosition = parseFloat(d3.select(this).attr("y")) + 135; // Correcting Value
+                        var yPosition = parseFloat(d3.select(this).attr("y")) + 150; // Correcting Value
                         
                         d3.select("#tooltip")
                         .style("left", xPosition + "px")
@@ -136,6 +136,7 @@
                         y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-labelBuffer}}, 
                         x: function(d){ if(!isNaN(parseInt(d[0]))) {return xScale(parseInt(d[0])) + labelBuffer}},
                         "font-size": 20,
+                        "font-family": "sans-serif",
                         fill: "black" 
                     })
                 }
@@ -248,7 +249,7 @@
                     //Adding the mouseOver function - Hover to highlight
                     .on("mouseover", function(d) {
                         var xPosition = parseFloat(d3.select(this).attr("x"));
-                        var yPosition = parseFloat(d3.select(this).attr("y"))+h*2+85; // Correcting Value
+                        var yPosition = parseFloat(d3.select(this).attr("y"))+h*2+110; // Correcting Value
 
                         d3.select("#tooltip")
                         .style("left", xPosition + "px")
@@ -272,9 +273,10 @@
                     .append("text")
                     .text(function(d) {if (parseInt(d[0])%10 == 0) return d[0]})
                     .attr({
-                        x: function(d,j) {return xScale(j) + barBuffer}, 
+                        x: function(d,j) {return xScale(j) + barBuffer-5}, 
                         y: h-barBuffer,//function(d,j) {return h-(yScale(parseInt(d[1])))},
-                        "font-size": 15,
+                        "font-size": 20,
+                        "font-family": "sans-serif",
                         fill: "black" 
                     })
                 }
@@ -390,7 +392,7 @@
                     //Adding the mouseOver function - Hover to highlight
                     .on("mouseover", function(d) {
                         var xPosition = parseFloat(d3.select(this).attr("x"));
-                        var yPosition = parseFloat(d3.select(this).attr("y"))+4*h+40; // Correcting Value
+                        var yPosition = parseFloat(d3.select(this).attr("y"))+4*h+75; // Correcting Value
 
                         d3.select("#tooltip")
                         .style("left", xPosition + "px")
@@ -425,6 +427,7 @@
                             }
                         },
                         "font-size": 20,
+                        "font-family": "sans-serif",
                         fill: "black" 
                     })
                 }
@@ -480,7 +483,7 @@
                 var buffer = 5
                 var barBuffer = 20
                 var h = barHeight*dL[0].length/3
-                var textBuffer = 400
+                var textBuffer = 450
 
                 var sectionSize = (w-buffer)/3 - 100
 
@@ -536,7 +539,7 @@
                     //Adding the mouseOver function - Hover to highlight
                     .on("mouseover", function(d) {
                         var xPosition = parseFloat(d3.select(this).attr("x"));//+parseFloat(d3.select(this).attr("width"));
-                        var yPosition = parseFloat(d3.select(this).attr("y"))+6*h + 85; // Correcting Value
+                        var yPosition = parseFloat(d3.select(this).attr("y"))+6*h + 125; // Correcting Value
 
                         d3.select("#tooltip")
                         .style("left", xPosition + "px")
@@ -595,6 +598,7 @@
                             } 
                         },
                         "font-size": 20,
+                        "font-family": "sans-serif",
                         fill: "black",
                         
                     })
@@ -700,7 +704,7 @@
                     //Adding the mouseOver function - Hover to highlight
                     .on("mouseover", function(d) {
                         var xPosition = parseFloat(d3.select(this).attr("x"));
-                        var yPosition = parseFloat(d3.select(this).attr("y"))+7*h + 210; // Correcting Value
+                        var yPosition = parseFloat(d3.select(this).attr("y"))+7*h + 260; // Correcting Value
 
                         d3.select("#tooltip")
                         .style("left", xPosition + "px")
@@ -759,6 +763,7 @@
                             } 
                         },
                         "font-size": 20,
+                        "font-family": "sans-serif",
                         fill: "black",
                     })
                 }  

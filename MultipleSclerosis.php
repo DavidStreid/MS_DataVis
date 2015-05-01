@@ -13,40 +13,22 @@
         
         <style>
             
-            #tooltip {
-            position: absolute;
-            width: 40px;
-            height: 20px;
-            padding: 10px; 
-            background-color: white;
-            -webkit-border-radius: 10px;
-            -moz-border-radius: 10px;
-            border-radius: 10px;
-            -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-            -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-            pointer-events: none;
-            }
 
-            #tooltip.hidden {
-            display: none;
-            }
-
-            #tooltip p {
-            margin: 0;
-            font-family: sans-serif;
-            font-size: 30px;
-            line-height: 20px;
-            }     
         </style>
-
-
     </head>
     <body>
+        
+        <!--LABELS -->
+        <div class="tooltip" id="tooltip" class="hidden">
+            <p><strong></strong></p>
+            <p><span id="value">20</span></p>
+        </div>
+        
         <div id="page">
             <div id="logo">
                 <img src="images/cumc_logo.png"/>
             </div>
+            
             <div id="header">
                 <h1>Multiple Sclerosis</h1>
                 <h3>4,287 total in-patients at NYP/CUMC</h3>
@@ -64,13 +46,171 @@
                     number of years of observations. For example, there are 463 males
                     and 1,383 females with at least a 5 year observation period.
                 </p>
-                <div id="visuals">
-                    <!-- I) YEAR OF DIAGNOSIS FOR MULTIPLE SCLEROSIS -->      
-                    <div id="tooltip" class="hidden">
-                        <p><strong></strong></p>
-                        <p><span id="value">20</span></p>
-                    </div>
+                <div id="figure1" class=figure>
+                    <!-- I) YEAR OF DIAGNOSIS FOR MULTIPLE SCLEROSIS -->  
+                    
+                    <script type="text/javascript"> 
+                        var pL = [
+                            <?php
+                                $periodList = array();
+                                ini_set('auto_detect_line_endings',TRUE);
+                                $handle = fopen('msReportData_ObsYears.txt','r') or die("Unable to open file!"); 
+                                if($handle){
+                                    while ( ($data = fgetcsv($handle, 1000) ) !== FALSE ) {
+                                        $x = explode(chr(9), $data[0]);
+                                        $ObsYears = $x[0];
+                                        $NumPatients = $x[1];
 
+                                        $period = array(
+                                            $ObsYears,
+                                            $NumPatients
+                                        );
+
+                                        array_push($periodList, $period);
+                                    }
+                                } else {
+                                    echo "Error reading File";
+                                }
+                                fclose($handle);
+                                echo json_encode($periodList);
+                            ?>
+                        ];
+                        
+                        var divWidth = (parseInt($("#figure1").css("width")))
+                        var divBorder = divWidth/20
+                        var graphWidth = divWidth-divBorder
+                        var len = pL[0].length
+                        
+                        var buffer = divBorder/2
+                        var barWidth = (graphWidth/len)*0.9
+                        var barBuffer = (graphWidth/len)*0.1
+                        var labelBuffer = graphWidth/400
+
+                        var w = (barWidth+barBuffer)*pL[0].length; // Width to include every entry
+                        var h = 550; 
+                        
+                        //Get value of div offset
+                        var offsets = $('#figure1').offset();
+                        var topOS1 = offsets.top;            //top Offset - labeled so to prevent confusion w/ read-only property of window
+                        var leftOS1 = offsets.left;
+
+                        //Defining maxHeight - vertical limit of the graph
+                        var maxHeight = d3.max(pL[0], function(d) {
+                            return parseInt(d[1]); // Number of patients
+                        });
+                        var maxYear = d3.max(pL[0], function(d) {
+                            return parseInt(d[0]);
+                        });
+                        var minYear = d3.min(pL[0], function(d) {
+                            return parseInt(d[0]);
+                        });
+
+                        var yScale = d3.scale.linear()
+                        .domain([0, maxHeight+labelBuffer])
+                        .range([0, h-buffer]);
+
+                        var yAxisScale = d3.scale.linear()
+                        .domain([0, maxHeight+labelBuffer])
+                        .range([h-buffer, 0]);
+
+                        var xScale = d3.scale.linear() 
+                            .domain([minYear, maxYear+1])           //+1 to include room for last bar
+                            .range([divBorder, divWidth-divBorder]);
+
+                        var xAxisScale = d3.scale.linear()
+                            .domain([minYear, maxYear+1])           //+1 to include room for last bar
+                            .range([divBorder, divWidth-divBorder]);
+
+                        var svg = d3.select("#figure1")
+                        .append("svg")
+                        .attr({
+                            width: w,
+                            height: h,
+                        });
+                        
+                        //Function to make Bars
+                        var makeBars = function() {
+                            svg.selectAll("rect")
+                            .data(pL[0])
+                            .enter()
+                            .append("rect")
+                            .attr({
+                                width: barWidth, 
+                                height: function(d) {
+                                    if(!isNaN(parseInt(d[1]))) {return (yScale(parseInt(d[1])))}
+                                },
+                                fill: function(d){
+                                    return "rgb(10, 100, 100)";
+                                },
+                                y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-buffer-(yScale(parseInt(d[1])))}},
+                                x: function(d){ 
+                                    if(!isNaN(parseInt(d[0]))) {
+                                        return xScale(parseInt(d[0]))
+                                    }
+                                    else if(d[0] == "< 1"){
+                                        return xScale(0) 
+                                    }
+                                },
+                            })
+                            //Adding the mouseOver function - Hover to highlight
+                            .on("mouseover", function(d) {
+                                var xPosition = parseFloat(d3.select(this).attr("x"));
+                                var yPosition = parseFloat(d3.select(this).attr("y")); // Correcting Value
+
+                                d3.select("#tooltip")
+                                .style("left", (xPosition+leftOS1) + "px")
+                                .style("top", (yPosition+topOS1) + "px")
+                                .select("#value")
+                                .text(d[1]); //function(d) {return d[0]}),
+
+                                d3.select("#tooltip").classed("hidden", false);
+                            })
+                            .on("mouseout", function() {
+                                d3.select("#tooltip").classed("hidden", true);
+                            })
+                        }
+                        
+                        makeBars();
+                        
+                        //Interesting Note - this needs to go after making the bars/labels or else the labels will not appear
+                        var yAxis = d3.svg.axis()
+                        .scale(yAxisScale)
+                        .orient("left")
+                        .tickPadding(5)
+                        .ticks(15);
+
+                        var xAxis = d3.svg.axis()
+                        .scale(xAxisScale)
+                        .tickPadding(5)
+                        .tickFormat(d3.format("d")) // removes comma
+                        .ticks(pL[0].length)
+                        .orient("bottom")
+
+                        svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" + (divBorder) + ",0)")
+                        .call(yAxis);
+
+                        svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" + buffer/2 + ", " + (h-45) + ")")
+                        .call(xAxis);
+                        
+                        
+                    </script>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Year of First Diagnosis</h2>
+                <p>
+                    The <i>First Diagnosis</i> is the first record we have of the patient being diagnosed
+                    with Multiple Sclerosis. Note that the patient may have been diagnosed at another clinic
+                    or hospital before coming to NYP/CUMC. This date is the first diagnosis date at NYP/CUMC. 
+                    Note, years with 5 or fewer patients have been removed to preserve privacy.
+                    
+                </p>
+                <div id=figure2 class="figure">
                     <script type="text/javascript"> 
                         var pL = [
                             <?php
@@ -98,14 +238,24 @@
                             ?>
                         ];
 
-                        //Define Variables
-                        var buffer = 40;
-                        var barWidth = 45; // modifier
-                        var barBuffer = 5;
-                        var labelBuffer = 5;
+                        var divWidth = (parseInt($("#figure2").css("width")))
+                        var divBorder = divWidth/20
+                        var graphWidth = divWidth-divBorder
+                        var len = pL[0].length
+
+                        var buffer = divBorder/2
+                        var barWidth = (graphWidth/len)*0.9
+                        var barBuffer = (graphWidth/len)*0.1
+                        var labelBuffer = graphWidth/400
+
                         var w = (barWidth+barBuffer)*pL[0].length; // Width to include every entry
                         var h = 550; 
 
+                        //Get value of div offset
+                        var offsets = $('#figure2').offset();
+                        var topOS2 = offsets.top;            //top Offset - labeled so to prevent confusion w/ read-only property of window
+                        var leftOS2 = offsets.left;
+                        
                         //Defining maxHeight - vertical limit of the graph
                         var maxHeight = d3.max(pL[0], function(d) {
                             return parseInt(d[1]); // Number of patients
@@ -118,27 +268,27 @@
                         });
 
                         var yScale = d3.scale.linear()
-                            .domain([0, maxHeight])
+                            .domain([0, maxHeight+labelBuffer])
                             .range([0, h-buffer]);
 
                         var yAxisScale = d3.scale.linear()
-                            .domain([0, maxHeight])
+                            .domain([0, maxHeight+labelBuffer])
                             .range([h-buffer, 0]);
 
-                        var xScale = d3.scale.linear()
-                            .domain([minYear, maxYear])
-                            .range([buffer, w]);
-                        
-                        var xAxisScale = d3.scale.linear()
-                            .domain([0, pL[0].length])
-                            .range([buffer, w]);
+                        var xScale = d3.scale.linear() 
+                            .domain([minYear, maxYear+1])           //+1 to include room for last bar
+                            .range([divBorder, divWidth-divBorder]);
 
-                        var svg = d3.select("#visuals")
-                            .append("svg")
-                            .attr({
-                                width: w,
-                                height: h,
-                            });
+                        var xAxisScale = d3.scale.linear()
+                            .domain([minYear, maxYear+1])           //+1 to include room for last bar
+                            .range([divBorder, divWidth-divBorder]);
+
+                        var svg = d3.select("#figure2")
+                        .append("svg")
+                        .attr({
+                            width: w,
+                            height: h,
+                        });
 
                         //Function to make Bars
                         var makeBars = function() {
@@ -155,79 +305,55 @@
                                     return "rgb(10, 100, 100)";
                                 },
                                 y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-buffer-(yScale(parseInt(d[1])))}},
-                                x: function(d){ if(!isNaN(parseInt(d[0]))) {
-                                    return xScale(parseInt(d[0]))}},
+                                x: function(d){ if(!isNaN(parseInt(d[0]))) {return xScale(parseInt(d[0]))}},
                             })
                             //Adding the mouseOver function - Hover to highlight
                             .on("mouseover", function(d) {
                                 var xPosition = parseFloat(d3.select(this).attr("x"));
-                                var yPosition = parseFloat(d3.select(this).attr("y"))-100; // Correcting Value
+                                var yPosition = parseFloat(d3.select(this).attr("y"));
 
                                 d3.select("#tooltip")
-                                .style("left", xPosition + "px")
-                                .style("top", yPosition+70 + "px")
-                                .select("#value")
-                                .text(d[1]); //function(d) {return d[0]}),
+                                    .style("left", (xPosition+leftOS2) + "px")
+                                    .style("top", (yPosition+topOS2) + "px")
+                                    .select("#value")
+                                    .text(d[1]); //function(d) {return d[0]}),
 
                                 d3.select("#tooltip").classed("hidden", false);
                             })
+
                             .on("mouseout", function() {
                                 d3.select("#tooltip").classed("hidden", true);
                             })
                         }
 
-                        //Function to makeLabels
-                        var makeLabels = function() {
-                            svg.selectAll("text")
-                            .data(pL[0])
-                            .enter()
-                            .append("text")
-                            .text(function(d) {return d[0]})
-                            .attr({
-                                y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-75}}, 
-                                x: function(d){ if(!isNaN(parseInt(d[0]))) {return xScale(parseInt(d[0]))}},
-                                "font-size": 20,
-                                "font-family": "sans-serif",
-                                fill: "black" 
-                            })
-                        }
                         makeBars();
-                        makeLabels();
+                    
 
                         //Interesting Note - this needs to go after making the bars/labels or else the labels will not appear
                         var yAxis = d3.svg.axis()
                             .scale(yAxisScale)
                             .orient("left")
-                            .ticks(13);
-                        
+                            .tickPadding(5)
+                            .ticks(15);
+
                         var xAxis = d3.svg.axis()
                             .scale(xAxisScale)
+                            .tickPadding(5)
+                            .tickFormat(d3.format("d")) // removes comma
+                            .ticks(pL[0].length)
                             .orient("bottom")
 
                         svg.append("g")
                             .attr("class", "axis")
-                            .attr("transform", "translate(" + (buffer-10) + ",0)")
+                            .attr("transform", "translate(" + (divBorder) + ",0)")
                             .call(yAxis);
-                        
+
                         svg.append("g")
                             .attr("class", "axis")
-                            .attr("transform", "translate(0," + (h-45) + ")")
+                            .attr("transform", "translate(" + buffer/2 + ", " + (h-45) + ")")
                             .call(xAxis);
+                        
                     </script>
-                </div>
-            </div>
-            
-            <div class="section">
-                <h2>Year of First Diagnosis</h2>
-                <p>
-                    The <i>First Diagnosis</i> is the first record we have of the patient being diagnosed
-                    with Multiple Sclerosis. Note that the patient may have been diagnosed at another clinic
-                    or hospital before coming to NYP/CUMC. This date is the first diagnosis date at NYP/CUMC. 
-                    Note, years with 5 or fewer patients have been removed to preserve privacy.
-                    
-                </p>
-                <div class="figure">
-                    
                     
                 </div>
             </div>
@@ -239,10 +365,141 @@
                     at NYP/CUMC. Note,
                     ages with 5 or fewer patients have been removed to preserve privacy.
                 </p>
-                <div class="figure">
-                    
-                    
-                    
+                <div id="figure3" class="figure">
+
+                    <script type="text/javascript">
+                        var pL = [
+                            <?php
+                                $patientList = array();
+                                ini_set('auto_detect_line_endings',TRUE);
+                                $handle = fopen('msReportData_DXbyAge.txt','r') or die("Unable to open file!"); 
+                                if($handle){
+                                    while ( ($data = fgetcsv($handle, 1000) ) !== FALSE ) {
+                                        $x = explode(chr(9), $data[0]);
+                                        $Age = $x[0];
+                                        $NumPatients = $x[1];
+
+                                        $patient = array(
+                                            $Age,
+                                            $NumPatients
+                                        );
+
+                                        array_push($patientList, $patient);
+                                    }
+                                } else {
+                                    echo "Error reading File";
+                                }
+                                fclose($handle);     
+                                echo json_encode($patientList);
+                            ?>
+                        ];
+
+                        var divWidth = (parseInt($("#figure3").css("width")))
+                        var divBorder = divWidth/20
+                        var graphWidth = divWidth-divBorder
+                        var len = pL[0].length
+
+                        var buffer = divBorder/2
+                        var barWidth = (graphWidth/len)*0.9
+                        var barBuffer = (graphWidth/len)*0.1
+                        var labelBuffer = graphWidth/400
+                        var w = (barWidth+barBuffer)*pL[0].length; 
+                        var h = 550; 
+
+                        //Get value of div offset
+                        var offsets = $('#figure3').offset();
+                        var topOS3 = offsets.top;            //top Offset - labeled so to prevent confusion w/ read-only property of window
+                        var leftOS3 = offsets.left;
+                        
+                        //Defining maxHeight - vertical limit of the graph
+                        var maxHeight = d3.max(pL[0], function(d) {return parseInt(d[1]);});
+                        var maxAge = d3.max(pL[0], function(d) {return parseInt(d[0]);});     
+                        var minAge = d3.min(pL[0], function(d) {return parseInt(d[0]);});
+
+                        var yScale = d3.scale.linear()
+                        .domain([0, maxHeight])
+                        .range([0, h-buffer]);
+
+                        var yAxisScale = d3.scale.linear()
+                        .domain([0, maxHeight])
+                        .range([h-buffer, 0]);
+
+                        var xScale = d3.scale.linear()
+                        .domain([minAge, maxAge+1])         // +1 to include room for last bar
+                        .range([divBorder, divWidth-divBorder]);
+
+                        var xAxisScale = d3.scale.linear()
+                        .domain([minAge, maxAge+1])         // +1 to include room for last bar
+                        .range([divBorder, divWidth-divBorder]);
+
+                        var svg = d3.select("#figure3")
+                        .append("svg")
+                        .attr({
+                            width: w,
+                            height: h,
+                        });
+
+                        //Function to make Bars
+                        var makeBars = function() {
+                            svg.selectAll("rect")
+                            .data(pL[0])
+                            .enter()
+                            .append("rect")
+                            .attr({
+                                width: barWidth, 
+                                height: function(d) {
+                                    return (yScale(parseInt(d[1])))
+                                },
+                                fill: function(d){
+                                    return "rgb(10, 100, 100)";
+                                },
+                                y: function(d){return h-buffer-(yScale(parseInt(d[1])))},
+                                x: function(d) {return (xScale(parseInt(d[0])))},
+                            })
+                            //Adding the mouseOver function - Hover to highlight
+                            .on("mouseover", function(d) {
+                                var xPosition = parseFloat(d3.select(this).attr("x"));
+                                var yPosition = parseFloat(d3.select(this).attr("y"));
+
+                                d3.select("#tooltip")
+                                .style("left", (xPosition+leftOS3) + "px")
+                                .style("top", (yPosition+topOS3) + "px")
+                                .select("#value")
+                                .text(d[1]); 
+
+                                d3.select("#tooltip").classed("hidden", false);
+                            })
+
+                            .on("mouseout", function() {
+                                d3.select("#tooltip").classed("hidden", true);
+                            })
+                        }
+
+                        makeBars();
+
+                        var yAxis = d3.svg.axis()
+                        .scale(yAxisScale)
+                        .orient("left")
+                        .tickPadding(5)
+                        .ticks(15);
+
+                        var xAxis = d3.svg.axis()
+                        .scale(xAxisScale)
+                        .tickPadding(5)
+                        .tickFormat(d3.format("d")) // removes comma
+                        .ticks(pL[0].length/10)
+                        .orient("bottom")
+
+                        svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" + (divBorder) + ",0)")
+                        .call(yAxis);
+
+                        svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" + buffer/4 + ", " + (h-45) + ")")
+                        .call(xAxis);    
+                    </script>
                 </div>
             </div>
             
@@ -254,9 +511,262 @@
                     this time these are not normalized for the frequency of use for the prescriptions so 
                     many of the top ranked drugs are simply the most commonly used medications.
                 </p>
-                <div class="figure">
+                <div id="figure4" class="figure">
                     
-                    
+                    <script type="text/javascript"> 
+                        var dL = [
+                            <?php
+                                $dXList = array();
+                                ini_set('auto_detect_line_endings',TRUE);
+                                $handle = fopen('msReportData_commonDiseases.txt','r') or die("Unable to open file!"); 
+                                if($handle){
+                                    while ( ($data = fgetcsv($handle, 1000) ) !== FALSE ) {
+                                        $x = explode(chr(9), $data[0]);
+                                        $code = $x[0];
+                                        $drugName = $x[1];
+                                        $numOfPatients = $x[2];
+
+                                        $dX = array(
+                                            $code,
+                                            $drugName,
+                                            $numOfPatients
+                                        );
+
+                                        array_push($dXList, $dX);
+                                    }
+                                } else {
+                                    echo "Error reading File";
+                                }
+                                fclose($handle);
+                                echo json_encode($dXList);
+                            ?>
+                        ];
+                        
+                        var divWidth = (parseInt($("#figure4").css("width")))
+                        var divBorder = divWidth/20
+                        var graphWidth = divWidth-divBorder
+                        var len = pL[0].length
+
+                        var margin = divWidth/100       // 1%
+                        var labelMargin = 20
+                        var textSpace = divWidth/7      // 14%
+                        var barSpace = divWidth/6       // 17% --- Last section expected to be smaller
+                        var sectionSize = margin+textSpace+barSpace
+                        
+                        var barHeight = 15
+                        var barMargin = 10
+                        var h = (barHeight+barMargin)*dL[0].length/3
+                        
+                        var maxWidth = d3.max(dL[0], function(d) {
+                            if (!isNaN(parseInt(d[2]))){
+                                return parseInt(d[2]); // Number of patients
+                            }
+                        });
+                        
+                        //Get value of div offset
+                        var offsets = $('#figure4').offset();
+                        var topOS4 = offsets.top;            //top Offset - labeled so to prevent confusion w/ read-only property of window
+                        var leftOS4 = offsets.left;
+
+                        var yScale = d3.scale.linear()
+                            .domain([0, 12])
+                            .range([labelMargin, h-labelMargin]);
+
+                        var xScale = d3.scale.linear()
+                            .domain([0, maxWidth])
+                            .range([0, barSpace]);
+                        
+                        var svg = d3.select("#figure4")
+                        .append("svg")
+                        .attr({
+                            width: w,
+                            height: h,
+                        });
+
+                        //Function to make Bars
+                        var makeBars = function() { 
+                            svg.selectAll("rect")
+                            .data(dL[0])
+                            .enter()
+                            .append("rect")
+                            .attr({
+                                width: function(d) { 
+                                    if(!isNaN(parseInt(d[2]))){
+                                        return (xScale(parseInt(d[2]))); 
+                                    }
+                                },
+                                height: barHeight,
+                                fill: function(d){
+                                    return "rgb(10, 50, 250)";
+                                },
+                                y: function(d, j) {return (yScale(j%12))}, // Adjust input for proper spacing
+                                x: function(d) {
+                                    if (dL[0].indexOf(d) < 12){
+                                        return margin+textSpace;                    
+                                    }
+                                    else if (dL[0].indexOf(d) < 24){
+                                        return sectionSize + margin+textSpace;
+                                    }
+                                    else{return sectionSize*2 + margin+textSpace} 
+                                } 
+                            })
+
+                            //Adding the mouseOver function - Hover to highlight
+                            .on("mouseover", function(d) {
+                                var xPosition = parseFloat(d3.select(this).attr("x"));//+parseFloat(d3.select(this).attr("width"));
+                                var yPosition = parseFloat(d3.select(this).attr("y")); // Correcting Value
+
+                                d3.select("#tooltip")
+                                    .style("left", (xPosition+leftOS4) + "px")
+                                    .style("top", (yPosition+topOS4) + "px")
+                                    .select("#value")
+                                    .text(d[2]);
+
+                                d3.select("#tooltip").classed("hidden", false);
+                            })
+
+                            .on("mouseout", function() {
+                                d3.select("#tooltip").classed("hidden", true);
+                            })
+                        }
+
+                        //Function to makeLabels
+                        var makeLabels = function() {
+                            svg.selectAll("text")
+                            .data(dL[0])
+                            .enter()
+                            .append("text")
+                            .text(function(d) {
+                                if (d[1] == ""){
+                                    return d[0]
+                                }
+                                else if (d[1] == "disease name"){
+                                    return ""
+                                }
+                                else{return d[1]}
+                            })
+                            .attr({
+                                y: function(d, j) {
+                                    if (d[1] == ""){
+                                        return yScale(1)
+                                    }
+                                    else{return yScale(j%12+0.75)}
+                                },
+                                x: function(d) {
+                                    if (d[1] == ""){
+                                        if (dL[0].indexOf(d) == 0 ){
+                                            return margin;                           
+                                        }
+                                        else if (dL[0].indexOf(d) == 12){
+                                            return sectionSize + margin;
+                                        }
+                                        else{ return (sectionSize*2) + margin} 
+                                    } 
+                                    else{ 
+                                        if (dL[0].indexOf(d) < 12){
+                                            return margin;                    
+                                        }
+                                        else if (dL[0].indexOf(d) < 24){
+                                            return sectionSize + margin;
+                                        }
+                                        else{ return sectionSize*2 + margin} 
+                                    } 
+                                },
+                                "font-size": function(d) {
+                                    if (d[1] == ""){
+                                        return 17;
+                                    } 
+                                    else{ 
+                                        return 10;
+                                    } 
+                                },
+                                "font-family": "sans-serif",
+                                fill: "black",
+
+                            })
+                        }
+
+                        makeBars();
+                        makeLabels();
+                        
+                        var yAxisScale = d3.scale.linear()
+                            .domain([0, maxHeight])
+                            .range([2*labelMargin, h-labelMargin]);
+
+                        var xAxisScale = d3.scale.linear()
+                            .domain([0, maxWidth])         // +1 to include room for last bar
+                            .range([0, barSpace]);
+                        
+                        var yAxis1 = d3.svg.axis()
+                            .scale(yAxisScale)
+                            .orient("left")
+                            .tickPadding(5)
+                            .ticks(0);
+
+                        var xAxis1 = d3.svg.axis()
+                            .scale(xAxisScale)
+                            .tickPadding(0)
+                            .tickFormat(d3.format("d")) // removes comma
+                            .ticks(dL[0].length/10)
+                            .orient("bottom")
+                        
+                        var yAxis2 = d3.svg.axis()
+                            .scale(yAxisScale)
+                            .orient("left")
+                            .tickPadding(5)
+                            .ticks(0);
+
+                        var xAxis2 = d3.svg.axis()
+                            .scale(xAxisScale)
+                            .tickPadding(0)
+                            .tickFormat(d3.format("d")) // removes comma
+                            .ticks(dL[0].length/10)
+                            .orient("bottom")
+                        
+                        var yAxis3 = d3.svg.axis()
+                            .scale(yAxisScale)
+                            .orient("left")
+                            .tickPadding(5)
+                            .ticks(0);
+
+                        var xAxis3 = d3.svg.axis()
+                            .scale(xAxisScale)
+                            .tickPadding(0)
+                            .tickFormat(d3.format("d")) // removes comma
+                            .ticks(dL[0].length/10)
+                            .orient("bottom")
+
+                        svg.append("g")
+                            .attr("class", "axis")
+                            .attr("transform", "translate(" + (margin+textSpace) + ", " + "" +  "0)")
+                            .call(yAxis1);
+
+                        svg.append("g")
+                            .attr("class", "axis")
+                            .attr("transform", "translate(" + (margin+textSpace) + ", " + (h-labelMargin) + ")")
+                            .call(xAxis1);  
+                        
+                        svg.append("g")
+                            .attr("class", "axis")
+                            .attr("transform", "translate(" + (sectionSize+margin+textSpace) + ", " + "" +  "0)")
+                            .call(yAxis2);
+
+                        svg.append("g")
+                            .attr("class", "axis")
+                            .attr("transform", "translate(" + (sectionSize+margin+textSpace) + ", " + (h-labelMargin) + ")")
+                            .call(xAxis2);  
+                        
+                        svg.append("g")
+                            .attr("class", "axis")
+                            .attr("transform", "translate(" +((sectionSize*2) + margin+textSpace) + ", " + "" +  "0)")
+                            .call(yAxis3);
+
+                        svg.append("g")
+                            .attr("class", "axis")
+                            .attr("transform", "translate(" + ((sectionSize*2) + margin+textSpace) + ", " + (h-labelMargin) + ")")
+                            .call(xAxis3);  
+
+                    </script>
                     
                     
                 </div>
@@ -270,7 +780,265 @@
                     this time these are not normalized for the frequency so 
                     many of the top ranked conditions are simply the most common.
                 </p>
-                <div class="figure">
+                <div id="figure5" class="figure">
+                    
+                    <script type="text/javascript">
+                        var rxL = [
+                            <?php
+                                $dXList = array();
+                                ini_set('auto_detect_line_endings',TRUE);
+                                $handle = fopen('msReportData_commonDX.txt','r') or die("Unable to open file!"); 
+                                if($handle){
+                                    while ( ($data = fgetcsv($handle, 1000) ) !== FALSE ) {
+                                        $x = explode(chr(9), $data[0]);
+                                        $code = $x[0];
+                                        $drugName = $x[1];
+                                        $numOfPatients = $x[2];
+
+                                        $dX = array(
+                                            $code,
+                                            $drugName,
+                                            $numOfPatients
+                                        );
+
+                                        array_push($dXList, $dX);
+                                    }
+                                } else {
+                                    echo "Error reading File";
+                                }
+                                fclose($handle);
+                                echo json_encode($dXList);
+                            ?>
+                        ];
+                        
+
+                        var divWidth = (parseInt($("#figure5").css("width")))
+                        var divBorder = divWidth/20
+                        var graphWidth = divWidth-divBorder
+                        var len = pL[0].length
+
+                        var margin = divWidth/100       // 1%
+                        var labelMargin = 20
+                        var textSpace = divWidth/7      // 14%
+                        var barSpace = divWidth/6       // 17% --- Last section expected to be smaller
+                        var sectionSize = margin+textSpace+barSpace
+
+                        var barHeight = 15
+                        var barMargin = 10
+                        var h = (barHeight+barMargin)*rxL[0].length/3
+
+                        var maxWidth = d3.max(rxL[0], function(d) {
+                            if (!isNaN(parseInt(d[2]))){
+                                return parseInt(d[2]); // Number of patients
+                            }
+                        });
+
+                        //Get value of div offset
+                        var offsets = $('#figure5').offset();
+                        var topOS5 = offsets.top;            //top Offset - labeled so to prevent confusion w/ read-only property of window
+                        var leftOS5 = offsets.left;
+
+                        var yScale = d3.scale.linear()
+                        .domain([0, 12])
+                        .range([labelMargin, h-labelMargin]);
+
+                        var xScale = d3.scale.linear()
+                        .domain([0, maxWidth])
+                        .range([0, barSpace]);
+
+                        var svg = d3.select("#figure5")
+                        .append("svg")
+                        .attr({
+                            width: w,
+                            height: h,
+                        });
+
+                        //Function to make Bars
+                        var makeBars = function() { 
+                            svg.selectAll("rect")
+                            .data(rxL[0])
+                            .enter()
+                            .append("rect")
+                            .attr({
+                                width: function(d) { 
+                                    if(!isNaN(parseInt(d[2]))){
+                                        return (xScale(parseInt(d[2]))); 
+                                    }
+                                },
+                                height: barHeight,
+                                fill: function(d){
+                                    return "rgb(10, 50, 250)";
+                                },
+                                y: function(d, j) {return (yScale(j%12))}, // Adjust input for proper spacing
+                                x: function(d) {
+                                    if (rxL[0].indexOf(d) < 12){
+                                        return margin+textSpace;                    
+                                    }
+                                    else if (rxL[0].indexOf(d) < 24){
+                                        return sectionSize + margin+textSpace;
+                                    }
+                                    else{return sectionSize*2 + margin+textSpace} 
+                                } 
+                            })
+
+                            //Adding the mouseOver function - Hover to highlight
+                            .on("mouseover", function(d) {
+                                var xPosition = parseFloat(d3.select(this).attr("x"));//+parseFloat(d3.select(this).attr("width"));
+                                var yPosition = parseFloat(d3.select(this).attr("y")); // Correcting Value
+
+                                d3.select("#tooltip")
+                                .style("left", (xPosition+leftOS5) + "px")
+                                .style("top", (yPosition+topOS5) + "px")
+                                .select("#value")
+                                .text(d[2]);
+
+                                d3.select("#tooltip").classed("hidden", false);
+                            })
+
+                            .on("mouseout", function() {
+                                d3.select("#tooltip").classed("hidden", true);
+                            })
+                        }
+
+                        //Function to makeLabels
+                        var makeLabels = function() {
+                            svg.selectAll("text")
+                            .data(rxL[0])
+                            .enter()
+                            .append("text")
+                            .text(function(d) {
+                                if (d[1] == ""){
+                                    return d[0]
+                                }
+                                else if (d[1] == "disease name"){
+                                    return ""
+                                }
+                                else{return d[1]}
+                            })
+                            .attr({
+                                y: function(d, j) {
+                                    if (d[1] == ""){
+                                        return yScale(1)
+                                    }
+                                    else{return yScale(j%12+0.75)}
+                                },
+                                x: function(d) {
+                                    if (d[1] == ""){
+                                        if (rxL[0].indexOf(d) == 0 ){
+                                            return margin;                           
+                                        }
+                                        else if (rxL[0].indexOf(d) == 12){
+                                            return sectionSize + margin;
+                                        }
+                                        else{ return (sectionSize*2) + margin} 
+                                    } 
+                                    else{ 
+                                        if (rxL[0].indexOf(d) < 12){
+                                            return margin;                    
+                                        }
+                                        else if (rxL[0].indexOf(d) < 24){
+                                            return sectionSize + margin;
+                                        }
+                                        else{ return sectionSize*2 + margin} 
+                                    } 
+                                },
+                                "font-size": function(d) {
+                                    if (d[1] == ""){
+                                        return 17;
+                                    } 
+                                    else{ 
+                                        return 10;
+                                    } 
+                                },
+                                "font-family": "sans-serif",
+                                fill: "black",
+
+                            })
+                        }
+
+                        makeBars();
+                        makeLabels();
+
+                        var yAxisScale = d3.scale.linear()
+                        .domain([0, maxHeight])
+                        .range([2*labelMargin, h-labelMargin]);
+
+                        var xAxisScale = d3.scale.linear()
+                        .domain([0, maxWidth])         // +1 to include room for last bar
+                        .range([0, barSpace]);
+
+                        var yAxis1 = d3.svg.axis()
+                        .scale(yAxisScale)
+                        .orient("left")
+                        .tickPadding(5)
+                        .ticks(0);
+
+                        var xAxis1 = d3.svg.axis()
+                        .scale(xAxisScale)
+                        .tickPadding(0)
+                        .tickFormat(d3.format("d")) // removes comma
+                        .ticks(rxL[0].length/10)
+                        .orient("bottom")
+
+                        var yAxis2 = d3.svg.axis()
+                        .scale(yAxisScale)
+                        .orient("left")
+                        .tickPadding(5)
+                        .ticks(0);
+
+                        var xAxis2 = d3.svg.axis()
+                        .scale(xAxisScale)
+                        .tickPadding(0)
+                        .tickFormat(d3.format("d")) // removes comma
+                        .ticks(rxL[0].length/10)
+                        .orient("bottom")
+
+                        var yAxis3 = d3.svg.axis()
+                        .scale(yAxisScale)
+                        .orient("left")
+                        .tickPadding(5)
+                        .ticks(0);
+
+                        var xAxis3 = d3.svg.axis()
+                        .scale(xAxisScale)
+                        .tickPadding(0)
+                        .tickFormat(d3.format("d")) // removes comma
+                        .ticks(rxL[0].length/10)
+                        .orient("bottom")
+
+                        svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" + (margin+textSpace) + ", " + "" +  "0)")
+                        .call(yAxis1);
+
+                        svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" + (margin+textSpace) + ", " + (h-labelMargin) + ")")
+                        .call(xAxis1);  
+
+                        svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" + (sectionSize+margin+textSpace) + ", " + "" +  "0)")
+                        .call(yAxis2);
+
+                        svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" + (sectionSize+margin+textSpace) + ", " + (h-labelMargin) + ")")
+                        .call(xAxis2);  
+
+                        svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" +((sectionSize*2) + margin+textSpace) + ", " + "" +  "0)")
+                        .call(yAxis3);
+
+                        svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" + ((sectionSize*2) + margin+textSpace) + ", " + (h-labelMargin) + ")")
+                        .call(xAxis3);  
+                        
+                        
+                        
+                    </script>
                    
                     
                     

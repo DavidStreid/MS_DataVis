@@ -118,11 +118,11 @@
                         .range([h-buffer, 0]);
 
                         var xScale = d3.scale.linear() 
-                            .domain([minYear, maxYear+1])           //+1 to include room for last bar
+                            .domain([minYear, maxYear+0.2])          
                             .range([divBorder, divWidth-divBorder]);
 
                         var xAxisScale = d3.scale.linear()
-                            .domain([minYear, maxYear+1])           //+1 to include room for last bar
+                            .domain([minYear, maxYear+0.2])           
                             .range([divBorder, divWidth-divBorder]);
                         
                         var svg = d3.select("#figure1")
@@ -132,10 +132,11 @@
                             height: h,
                         });
 
-                        //ADDING Grid Lines
+                        //Adding Grid Lines
                         var gridScale = d3.scale.linear()
                             .domain([0, pL[0].length])
                             .range([divBorder, divWidth-divBorder]);
+                        
                         function make_x_axis() {        
                             return d3.svg.axis()
                                 .scale(xAxisScale)
@@ -186,7 +187,7 @@
                                     
                             })
                         }
-                        //makePoints();
+                        makePoints();
                         
                         //Function to make Bars
                         var makeBars = function() {
@@ -230,31 +231,31 @@
                             })
                         }
                         
-                        makeBars();
+                        //makeBars();
                         
                         //Interesting Note - this needs to go after making the bars/labels or else the labels will not appear
                         var yAxis = d3.svg.axis()
-                        .scale(yAxisScale)
-                        .orient("left")
-                        .tickPadding(5)
-                        .ticks(15);
+                            .scale(yAxisScale)
+                            .orient("left")
+                            .tickPadding(5)
+                            .ticks(15);
 
                         var xAxis = d3.svg.axis()
-                        .scale(xAxisScale)
-                        .tickPadding(5)
-                        .tickFormat(d3.format("d")) // removes comma
-                        .ticks(pL[0].length)
-                        .orient("bottom")
+                            .scale(xAxisScale)
+                            .tickPadding(5)
+                            .tickFormat(d3.format("d")) // removes comma
+                            .ticks(pL[0].length)
+                            .orient("bottom")
 
                         svg.append("g")
-                        .attr("class", "axis")
-                        .attr("transform", "translate(" + (divBorder) + ",0)")
-                        .call(yAxis);
+                            .attr("class", "axis")
+                            .attr("transform", "translate(" + (divBorder) + ",0)")
+                            .call(yAxis);
 
                         svg.append("g")
-                        .attr("class", "axis")
-                        .attr("transform", "translate(" + buffer/2 + ", " + (h-45) + ")")
-                        .call(xAxis);
+                            .attr("class", "axis")
+                            .attr("transform", "translate(" + 0 + ", " + (h-45) + ")")
+                            .call(xAxis);
                         
                         
                     </script>
@@ -336,11 +337,11 @@
                             .range([h-buffer, 0]);
 
                         var xScale = d3.scale.linear() 
-                            .domain([minYear, maxYear+1])           //+1 to include room for last bar
+                            .domain([minYear, maxYear+0.5])           //+1 to include room for last bar
                             .range([divBorder, divWidth-divBorder]);
 
                         var xAxisScale = d3.scale.linear()
-                            .domain([minYear, maxYear+1])           //+1 to include room for last bar
+                            .domain([minYear, maxYear+0.5])           //+1 to include room for last bar
                             .range([divBorder, divWidth-divBorder]);
 
                         var svg = d3.select("#figure2")
@@ -349,6 +350,30 @@
                             width: w,
                             height: h,
                         });
+                        
+                        var makePoints = function() {
+                            svg.selectAll("circle")
+                            .data(pL[0])
+                            .enter()
+                            .append("circle")
+                            .attr({
+                                fill: function(d){
+                                    return "blue";
+                                },
+                                r: 5,
+                                cy: function(d){ if(!isNaN(parseInt(d[1]))) {return h-buffer-(yScale(parseInt(d[1])))}},
+                                cx: function(d){ 
+                                    if(!isNaN(parseInt(d[0]))) {
+                                        return xScale(parseInt(d[0]))
+                                    }
+                                    else if(d[0] == "< 1"){
+                                        return xScale(0) 
+                                    }
+                                },
+
+                            })
+                        }
+                        makePoints();
                         
                         //ADDING Grid Lines
                         var gridScale = d3.scale.linear()
@@ -418,7 +443,7 @@
                             })
                         }
 
-                        makeBars();
+                        //makeBars();
                     
 
                         //Interesting Note - this needs to go after making the bars/labels or else the labels will not appear
@@ -442,7 +467,7 @@
 
                         svg.append("g")
                             .attr("class", "axis")
-                            .attr("transform", "translate(" + buffer/2 + ", " + (h-45) + ")")
+                            .attr("transform", "translate(" + 0 + ", " + (h-45) + ")")
                             .call(xAxis);
                         
                     </script>
@@ -562,6 +587,30 @@
                               .tickSize(-w, 0, 0)
                               .tickFormat("")
                              )
+                        
+                        var makePoints = function() {
+                            svg.selectAll("circle")
+                            .data(pL[0])
+                            .enter()
+                            .append("circle")
+                            .attr({
+                                fill: function(d){
+                                    return "blue";
+                                },
+                                r: 5,
+                                cy: function(d){ if(!isNaN(parseInt(d[1]))) {return h-buffer-(yScale(parseInt(d[1])))}},
+                                cx: function(d){ 
+                                    if(!isNaN(parseInt(d[0]))) {
+                                        return xScale(parseInt(d[0]))
+                                    }
+                                    else if(d[0] == "< 1"){
+                                        return xScale(0) 
+                                    }
+                                },
+
+                            })
+                        }
+                        makePoints();
 
                         //Function to make Bars
                         var makeBars = function() {
@@ -599,7 +648,7 @@
                             })
                         }
 
-                        makeBars();
+                        //makeBars();
 
                         var yAxis = d3.svg.axis()
                         .scale(yAxisScale)
@@ -621,7 +670,7 @@
 
                         svg.append("g")
                         .attr("class", "axis")
-                        .attr("transform", "translate(" + buffer/4 + ", " + (h-45) + ")")
+                        .attr("transform", "translate(" + 0 + ", " + (h-45) + ")")
                         .call(xAxis);    
                     </script>
                 </div>

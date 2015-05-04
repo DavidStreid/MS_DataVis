@@ -10,16 +10,7 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
         <!--Adding the d3 javaascript-->
         <script type="text/javascript" src="d3.min.js"></script>
-        
-        <style>
-            .grid .tick {
-                stroke: lightgrey;
-                opacity: 0.7;
-            }
-            .grid path {
-                stroke-width: 0;
-            }            
-        </style>
+
     </head>
     <body>
         <!--LABELS -->
@@ -89,6 +80,8 @@
                         var barWidth = (graphWidth/len)*0.9
                         var barBuffer = (graphWidth/len)*0.1
                         var labelBuffer = graphWidth/400
+                        
+                        var verticalTicks = 10
 
                         var w = (barWidth+barBuffer)*pL[0].length; // Width to include every entry
                         var h = 550; 
@@ -148,8 +141,9 @@
                             return d3.svg.axis()
                                 .scale(yAxisScale)
                                 .orient("left")
-                                .ticks(5)
+                                .ticks(verticalTicks)
                         }            
+                        
                         svg.append("g")         
                         .attr("class", "grid")
                         .attr("transform", "translate(0," + (h-buffer) + ")")
@@ -157,6 +151,7 @@
                               .tickSize(-h, 0, 0)
                               .tickFormat("")
                              )
+                        
                         svg.append("g")         
                         .attr("class", "grid")
                         .attr("transform", "translate(" + divBorder + ",0)")
@@ -237,7 +232,7 @@
 
                         svg.append('svg:path')
                             .attr('d', lineGen(numbers))
-                            .attr('stroke', 'green')
+                            .attr('stroke', 'RGB(130,180,230)')
                             .attr('stroke-width', 2)
                             .attr('fill', 'none');
                             
@@ -247,7 +242,7 @@
                             .scale(yAxisScale)
                             .orient("left")
                             .tickPadding(5)
-                            .ticks(15);
+                            .ticks(verticalTicks);
 
                         var xAxis = d3.svg.axis()
                             .scale(xAxisScale)
@@ -320,6 +315,8 @@
 
                         var w = (barWidth+barBuffer)*pL[0].length; // Width to include every entry
                         var h = 550; 
+                        
+                        var verticalTicks = 15
 
                         //Get value of div offset
                         var offsets = $('#figure2').offset();
@@ -414,7 +411,7 @@
 
                         svg.append('svg:path')
                             .attr('d', lineGen(numbers))
-                            .attr('stroke', 'green')
+                            .attr('stroke', 'RGB(130,180,230)')
                             .attr('stroke-width', 2)
                             .attr('fill', 'none');
                         
@@ -433,7 +430,7 @@
                             return d3.svg.axis()
                             .scale(yAxisScale)
                             .orient("left")
-                            .ticks(5)
+                            .ticks(verticalTicks)
                         }            
                         svg.append("g")         
                         .attr("class", "grid")
@@ -456,7 +453,7 @@
                             .scale(yAxisScale)
                             .orient("left")
                             .tickPadding(5)
-                            .ticks(15);
+                            .ticks(verticalTicks);
 
                         var xAxis = d3.svg.axis()
                             .scale(xAxisScale)
@@ -527,6 +524,8 @@
                         var labelBuffer = graphWidth/400
                         var w = (barWidth+barBuffer)*pL[0].length; 
                         var h = 550; 
+                        
+                        var ver
 
                         //Get value of div offset
                         var offsets = $('#figure3').offset();
@@ -647,7 +646,7 @@
 
                         svg.append('svg:path')
                             .attr('d', lineGen(numbers))
-                            .attr('stroke', 'green')
+                            .attr('stroke', 'RGB(130,180,230)')
                             .attr('stroke-width', 2)
                             .attr('fill', 'none');
 
@@ -810,7 +809,7 @@
                                 },
                                 height: barHeight,
                                 fill: function(d){
-                                    return "rgb(10, 50, 250)";
+                                    return "rgb(130, 180, 230)";
                                 },
                                 y: function(d, j) {return (yScale(j%12))}, // Adjust input for proper spacing
                                 x: function(d) {
@@ -861,14 +860,14 @@
                             .attr({
                                 y: function(d, j) {
                                     if (d[1] == ""){
-                                        return yScale(1)
+                                        return yScale(0)
                                     }
                                     else{return yScale(j%12+0.75)}
                                 },
                                 x: function(d) {
                                     if (d[1] == ""){
                                         if (dL[0].indexOf(d) == 0 ){
-                                            return margin;                           
+                                            return margin*3;                           
                                         }
                                         else if (dL[0].indexOf(d) == 12){
                                             return sectionSize + margin;
@@ -901,36 +900,63 @@
 
                         makeLabels();
 
+                        //MAKING THE GRID LINES
+
+                        //Creates vertical gridlines
                         function make_x_axis() {        
                             return d3.svg.axis()
-                            .scale(xAxisScale)
+                            .scale(xScale)
                             .orient("bottom")
-                            .ticks(pL[0].length)
+                            .ticks(pL[0].length/5)
 
                         }
                         
+                        //Creates horizontal gridlines
                         function make_y_axis() {        
                             return d3.svg.axis()
-                            .scale(yAxisScale)
+                            .scale(yScale)
                             .orient("left")
                             .ticks(5)
                         }           
                         
+                        //VERTICAL
                         svg.append("g")         
-                        .attr("class", "grid")
-                        .attr("transform", "translate(" + (margin+textSpace) + ", " + (h-verticalMargin) + ")")
-                        .call(make_x_axis()
-                              .tickSize(-h+verticalMargin*2, 0, 0)
-                              .tickFormat("")
-                             )
+                            .attr("class", "grid")
+                            .attr("transform", "translate(" + (margin+textSpace) + ", " + (h-verticalMargin/2) + ")")
+                            .call(make_x_axis()
+                                  .tickSize(-h+verticalMargin+margin, 0, 0)
+                                  .tickFormat("")
+                                 )
                         
+                        //VERTICAL
                         svg.append("g")         
                         .attr("class", "grid")
-                        .attr("transform", "translate(" + (margin+textSpace)+ ",0)")
-                        .call(make_y_axis()
-                              .tickSize(-sectionSize+margin+textSpace, 0, 0)
+                        .attr("transform", "translate(" + (margin+textSpace+sectionSize) + ", " + (h-verticalMargin/2) + ")")
+                        .call(make_x_axis()
+                              .tickSize(-h+verticalMargin+margin, 0, 0)
                               .tickFormat("")
                              )
+                        //VERTICAL
+                        svg.append("g")         
+                        .attr("class", "grid")
+                        .attr("transform", "translate(" + (margin+textSpace+sectionSize*2) + ", " + (h-verticalMargin/2) + ")")
+                        .call(make_x_axis()
+                              .tickSize(-h+verticalMargin+margin, 0, 0)
+                              .tickFormat("")
+                             )
+
+
+                        
+                        /*
+                        //HORIZONTAL
+                        svg.append("g")         
+                            .attr("class", "grid")
+                            .attr("transform", "translate(" + (margin+textSpace) + ",0)")
+                            .call(make_y_axis()
+                                  .tickSize(-sectionSize+margin+textSpace, 0, 0)
+                                  .tickFormat("")
+                                 )
+                        */
                         
                         makeBars();
 
@@ -1113,7 +1139,7 @@
                                 },
                                 height: barHeight,
                                 fill: function(d){
-                                    return "rgb(10, 50, 250)";
+                                    return "rgb(215, 125, 145)";
                                 },
                                 y: function(d, j) {return (yScale(j%12))}, // Adjust input for proper spacing
                                 x: function(d) {
@@ -1164,14 +1190,14 @@
                             .attr({
                                 y: function(d, j) {
                                     if (d[1] == ""){
-                                        return yScale(1)
+                                        return yScale(0)
                                     }
                                     else{return yScale(j%12+0.75)}
                                 },
                                 x: function(d) {
                                     if (d[1] == ""){
                                         if (rxL[0].indexOf(d) == 0 ){
-                                            return margin;                           
+                                            return margin*3;                           
                                         }
                                         else if (rxL[0].indexOf(d) == 12){
                                             return sectionSize + margin;
@@ -1202,8 +1228,44 @@
                             })
                         }
 
-                        makeBars();
                         makeLabels();
+                        
+                        //Creates vertical gridlines
+                        function make_x_axis() {        
+                            return d3.svg.axis()
+                            .scale(xScale)
+                            .orient("bottom")
+                            .ticks(pL[0].length/5)
+                        }
+
+
+                        //VERTICAL
+                        svg.append("g")         
+                        .attr("class", "grid")
+                        .attr("transform", "translate(" + (margin+textSpace) + ", " + (h-verticalMargin/2) + ")")
+                        .call(make_x_axis()
+                              .tickSize(-h+verticalMargin+margin, 0, 0)
+                              .tickFormat("")
+                             )
+
+                        //VERTICAL
+                        svg.append("g")         
+                        .attr("class", "grid")
+                        .attr("transform", "translate(" + (margin+textSpace+sectionSize) + ", " + (h-verticalMargin/2) + ")")
+                        .call(make_x_axis()
+                              .tickSize(-h+verticalMargin+margin, 0, 0)
+                              .tickFormat("")
+                             )
+                        //VERTICAL
+                        svg.append("g")         
+                        .attr("class", "grid")
+                        .attr("transform", "translate(" + (margin+textSpace+sectionSize*2) + ", " + (h-verticalMargin/2) + ")")
+                        .call(make_x_axis()
+                              .tickSize(-h+verticalMargin+margin, 0, 0)
+                              .tickFormat("")
+                             )
+                        
+                        makeBars();
 
                         var yAxisScale = d3.scale.linear()
                         .domain([0, maxHeight])

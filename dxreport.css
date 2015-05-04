@@ -24,6 +24,14 @@
     line-height: 10px;
 }     
 
+.grid .tick {
+    stroke: lightgrey;
+    opacity: 0.7;
+}
+.grid path {
+    stroke-width: 0;
+}
+
 
 /*Modify Rectangles for tooltip - small overlays over data*/
 rect {

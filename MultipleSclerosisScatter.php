@@ -165,9 +165,27 @@
                               .tickFormat("")
                              )
                         
+                        var convertData = function(x){
+                            var numbers = []
+                            var a
+                            var b
+
+                            x.forEach(function(d) {
+                                if(!isNaN(parseInt(d[0]))) {
+                                    a = parseInt(d[0])
+                                    b = parseInt(d[1])
+                                    numbers.push([a,b])
+                                    //console.log(numbers)
+                                } 
+                            })
+                            return numbers
+                        }
+
+                        var numbers = convertData(pL[0])
+                        
                         var makePoints = function() {
                             svg.selectAll("circle")
-                                .data(pL[0])
+                                .data(numbers)
                                 .enter()
                                 .append("circle")
                                 .attr({
@@ -186,52 +204,43 @@
                                 },
                                     
                             })
-                        }
-                        makePoints();
-                        
-                        //Function to make Bars
-                        var makeBars = function() {
-                            svg.selectAll("rect")
-                            .data(pL[0])
-                            .enter()
-                            .append("rect")
-                            .attr({
-                                width: barWidth, 
-                                height: function(d) {
-                                    if(!isNaN(parseInt(d[1]))) {return (yScale(parseInt(d[1])))}
-                                },
-                                fill: function(d){
-                                    return "rgb(10, 100, 100)";
-                                },
-                                y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-buffer-(yScale(parseInt(d[1])))}},
-                                x: function(d){ 
-                                    if(!isNaN(parseInt(d[0]))) {
-                                        return xScale(parseInt(d[0]))
-                                    }
-                                    else if(d[0] == "< 1"){
-                                        return xScale(0) 
-                                    }
-                                },
-                            })
+                            
                             //Adding the mouseOver function - Hover to highlight
                             .on("mouseover", function(d) {
-                                var xPosition = parseFloat(d3.select(this).attr("x"));
-                                var yPosition = parseFloat(d3.select(this).attr("y")); // Correcting Value
+                                var xPosition = parseFloat(d3.select(this).attr("cx"));
+                                var yPosition = parseFloat(d3.select(this).attr("cy"));
 
                                 d3.select("#tooltip")
-                                .style("left", (xPosition+leftOS1) + "px")
-                                .style("top", (yPosition+topOS1) + "px")
-                                .select("#value")
-                                .text(d[1]); //function(d) {return d[0]}),
+                                    .style("left", (xPosition+leftOS1) + "px")
+                                    .style("top", (yPosition+topOS1) + "px")
+                                    .select("#value")
+                                    .text(d[1]);
 
                                 d3.select("#tooltip").classed("hidden", false);
                             })
+
                             .on("mouseout", function() {
                                 d3.select("#tooltip").classed("hidden", true);
                             })
                         }
+                        makePoints();
+
                         
-                        //makeBars();
+                        var lineGen = d3.svg.line()
+                            .x(function(d) {
+                                return xScale(d[0])
+                            })
+                            .y(function(d) {
+                                return h-buffer-yScale(d[1])
+                            })
+                            .interpolate("linear");   
+
+                        svg.append('svg:path')
+                            .attr('d', lineGen(numbers))
+                            .attr('stroke', 'green')
+                            .attr('stroke-width', 2)
+                            .attr('fill', 'none');
+                            
                         
                         //Interesting Note - this needs to go after making the bars/labels or else the labels will not appear
                         var yAxis = d3.svg.axis()
@@ -314,7 +323,7 @@
 
                         //Get value of div offset
                         var offsets = $('#figure2').offset();
-                        var topOS2 = offsets.top;            //top Offset - labeled so to prevent confusion w/ read-only property of window
+                        var topOS2 = offsets.top; //top Offset - labeled so to prevent confusion w/ read-only property of window
                         var leftOS2 = offsets.left;
                         
                         //Defining maxHeight - vertical limit of the graph
@@ -351,9 +360,27 @@
                             height: h,
                         });
                         
+                        var convertData = function(x){
+                            var numbers = []
+                            var a
+                            var b
+
+                            x.forEach(function(d) {
+                                if(!isNaN(parseInt(d[0]))) {
+                                    a = parseInt(d[0])
+                                    b = parseInt(d[1])
+                                    numbers.push([a,b])
+                                    //console.log(numbers)
+                                } 
+                            })
+                            return numbers
+                        }
+
+                        var numbers = convertData(pL[0])
+                        
                         var makePoints = function() {
                             svg.selectAll("circle")
-                            .data(pL[0])
+                            .data(numbers)
                             .enter()
                             .append("circle")
                             .attr({
@@ -374,6 +401,22 @@
                             })
                         }
                         makePoints();
+                        
+                        var lineGen = d3.svg.line()
+                            .x(function(d) {
+                                return xScale(d[0])
+                            })
+                            .y(function(d) {
+                                return h-buffer-yScale(d[1])
+                            })
+                            .interpolate("linear");
+
+
+                        svg.append('svg:path')
+                            .attr('d', lineGen(numbers))
+                            .attr('stroke', 'green')
+                            .attr('stroke-width', 2)
+                            .attr('fill', 'none');
                         
                         //ADDING Grid Lines
                         var gridScale = d3.scale.linear()
@@ -406,44 +449,6 @@
                               .tickSize(-w, 0, 0)
                               .tickFormat("")
                              )
-
-                        //Function to make Bars
-                        var makeBars = function() {
-                            svg.selectAll("rect")
-                            .data(pL[0])
-                            .enter()
-                            .append("rect")
-                            .attr({
-                                width: barWidth, 
-                                height: function(d) {
-                                    if(!isNaN(parseInt(d[1]))) {return (yScale(parseInt(d[1])))}
-                                },
-                                fill: function(d){
-                                    return "rgb(10, 100, 100)";
-                                },
-                                y: function(d){ if(!isNaN(parseInt(d[1]))) {return h-buffer-(yScale(parseInt(d[1])))}},
-                                x: function(d){ if(!isNaN(parseInt(d[0]))) {return xScale(parseInt(d[0]))}},
-                            })
-                            //Adding the mouseOver function - Hover to highlight
-                            .on("mouseover", function(d) {
-                                var xPosition = parseFloat(d3.select(this).attr("x"));
-                                var yPosition = parseFloat(d3.select(this).attr("y"));
-
-                                d3.select("#tooltip")
-                                    .style("left", (xPosition+leftOS2) + "px")
-                                    .style("top", (yPosition+topOS2) + "px")
-                                    .select("#value")
-                                    .text(d[1]); //function(d) {return d[0]}),
-
-                                d3.select("#tooltip").classed("hidden", false);
-                            })
-
-                            .on("mouseout", function() {
-                                d3.select("#tooltip").classed("hidden", true);
-                            })
-                        }
-
-                        //makeBars();
                     
 
                         //Interesting Note - this needs to go after making the bars/labels or else the labels will not appear
@@ -588,9 +593,27 @@
                               .tickFormat("")
                              )
                         
+                        var convertData = function(x){
+                            var numbers = []
+                            var a
+                            var b
+
+                            x.forEach(function(d) {
+                                if(!isNaN(parseInt(d[0]))) {
+                                    a = parseInt(d[0])
+                                    b = parseInt(d[1])
+                                    numbers.push([a,b])
+                                    //console.log(numbers)
+                                } 
+                            })
+                            return numbers
+                        }
+
+                        var numbers = convertData(pL[0])
+                        
                         var makePoints = function() {
                             svg.selectAll("circle")
-                            .data(pL[0])
+                            .data(numbers)
                             .enter()
                             .append("circle")
                             .attr({
@@ -611,6 +634,22 @@
                             })
                         }
                         makePoints();
+                        
+                        var lineGen = d3.svg.line()
+                            .x(function(d) {
+                                return xScale(d[0])
+                            })
+                            .y(function(d) {
+                                return h-buffer-yScale(d[1])
+                            })
+                            .interpolate("linear");
+
+
+                        svg.append('svg:path')
+                            .attr('d', lineGen(numbers))
+                            .attr('stroke', 'green')
+                            .attr('stroke-width', 2)
+                            .attr('fill', 'none');
 
                         //Function to make Bars
                         var makeBars = function() {
@@ -729,6 +768,8 @@
                         var barHeight = 15
                         var barMargin = 10
                         var h = (barHeight+barMargin)*dL[0].length/3
+                        
+                        var verticalMargin = h/10
                         
                         var maxWidth = d3.max(dL[0], function(d) {
                             if (!isNaN(parseInt(d[2]))){
@@ -859,55 +900,44 @@
                         }
 
                         makeLabels();
-                        //ADDING Grid Lines
-                        var xgridScale = d3.scale.linear()
-                            .domain([0, 5])
-                            .range([0, barSpace]);
-                        
-                        var ygridScale = d3.scale.linear()
-                            .domain([0, 5])
-                            .range([labelMargin, h-labelMargin]);
-
 
                         function make_x_axis() {        
                             return d3.svg.axis()
-                                .scale(xgridScale)
-                                .orient("bottom")
-                                .ticks(5)
-                        }
+                            .scale(xAxisScale)
+                            .orient("bottom")
+                            .ticks(pL[0].length)
 
+                        }
+                        
                         function make_y_axis() {        
                             return d3.svg.axis()
-                                .scale(ygridScale)
-                                .orient("left")
-                                .ticks(5)
-                        }
-
-                        /*
+                            .scale(yAxisScale)
+                            .orient("left")
+                            .ticks(5)
+                        }           
+                        
                         svg.append("g")         
                         .attr("class", "grid")
-                        .attr("transform", "translate(" + (margin+textSpace) + ", " + (h-labelMargin) + ")")
+                        .attr("transform", "translate(" + (margin+textSpace) + ", " + (h-verticalMargin) + ")")
                         .call(make_x_axis()
-                              .tickSize(-h, 0, 0)
+                              .tickSize(-h+verticalMargin*2, 0, 0)
                               .tickFormat("")
                              )
-
+                        
                         svg.append("g")         
                         .attr("class", "grid")
-                        .attr("transform", "translate(" + (margin+textSpace) + ",0)")
+                        .attr("transform", "translate(" + (margin+textSpace)+ ",0)")
                         .call(make_y_axis()
-                              .tickSize(-w, 0, 0)
+                              .tickSize(-sectionSize+margin+textSpace, 0, 0)
                               .tickFormat("")
                              )
-                        */
+                        
                         makeBars();
 
-                        
-
-                        
+                        //Adding Axes
                         var yAxisScale = d3.scale.linear()
                             .domain([0, maxHeight])
-                            .range([2*labelMargin, h-labelMargin]);
+                            .range([verticalMargin, h-verticalMargin]);
 
                         var xAxisScale = d3.scale.linear()
                             .domain([0, maxWidth])         // +1 to include room for last bar

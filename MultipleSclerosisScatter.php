@@ -101,22 +101,6 @@
                         var minYear = d3.min(pL[0], function(d) {
                             return parseInt(d[0]);
                         });
-
-                        var yScale = d3.scale.linear()
-                        .domain([0, maxHeight+labelBuffer])
-                        .range([0, h-buffer]);
-
-                        var yAxisScale = d3.scale.linear()
-                        .domain([0, maxHeight+labelBuffer])
-                        .range([h-buffer, 0]);
-
-                        var xScale = d3.scale.linear() 
-                            .domain([minYear, maxYear+0.2])          
-                            .range([divBorder, divWidth-divBorder]);
-
-                        var xAxisScale = d3.scale.linear()
-                            .domain([minYear, maxYear+0.2])           
-                            .range([divBorder, divWidth-divBorder]);
                         
                         var svg = d3.select("#figure1")
                         .append("svg")
@@ -125,9 +109,20 @@
                             height: h,
                         });
 
-                        //Adding Grid Lines
-                        var gridScale = d3.scale.linear()
-                            .domain([0, pL[0].length])
+                        var yScale = d3.scale.linear()
+                            .domain([0, maxHeight+100])
+                            .range([0, h-buffer]);
+
+                        var yAxisScale = d3.scale.linear()
+                            .domain([0, maxHeight+100])
+                            .range([h-buffer, 0]);
+
+                        var xScale = d3.scale.linear() 
+                            .domain([minYear-0.5, maxYear+0.5])          
+                            .range([divBorder, divWidth-divBorder]);
+
+                        var xAxisScale = d3.scale.linear()
+                            .domain([minYear-0.5, maxYear+0.5])           
                             .range([divBorder, divWidth-divBorder]);
                         
                         function make_x_axis() {        
@@ -219,7 +214,6 @@
                             })
                         }
                         makePoints();
-
                         
                         var lineGen = d3.svg.line()
                             .x(function(d) {
@@ -234,8 +228,7 @@
                             .attr('d', lineGen(numbers))
                             .attr('stroke', 'RGB(130,180,230)')
                             .attr('stroke-width', 2)
-                            .attr('fill', 'none');
-                            
+                            .attr('fill', 'none');   
                         
                         //Interesting Note - this needs to go after making the bars/labels or else the labels will not appear
                         var yAxis = d3.svg.axis()
@@ -258,7 +251,7 @@
 
                         svg.append("g")
                             .attr("class", "axis")
-                            .attr("transform", "translate(" + 0 + ", " + (h-45) + ")")
+                            .attr("transform", "translate(" + 0 + ", " + (h-buffer) + ")")
                             .call(xAxis);
                         
                         
@@ -343,11 +336,11 @@
                             .range([h-buffer, 0]);
 
                         var xScale = d3.scale.linear() 
-                            .domain([minYear, maxYear+0.5])           //+1 to include room for last bar
+                            .domain([minYear-1, maxYear+0.5])           //+1 to include room for last bar
                             .range([divBorder, divWidth-divBorder]);
 
                         var xAxisScale = d3.scale.linear()
-                            .domain([minYear, maxYear+0.5])           //+1 to include room for last bar
+                            .domain([minYear-1, maxYear+0.5])           //+1 to include room for last bar
                             .range([divBorder, divWidth-divBorder]);
 
                         var svg = d3.select("#figure2")
@@ -469,7 +462,7 @@
 
                         svg.append("g")
                             .attr("class", "axis")
-                            .attr("transform", "translate(" + 0 + ", " + (h-45) + ")")
+                            .attr("transform", "translate(" + 0 + ", " + (h-buffer) + ")")
                             .call(xAxis);
                         
                     </script>
@@ -538,19 +531,19 @@
                         var minAge = d3.min(pL[0], function(d) {return parseInt(d[0]);});
 
                         var yScale = d3.scale.linear()
-                        .domain([0, maxHeight])
+                        .domain([0, maxHeight+(maxHeight/10)])
                         .range([0, h-buffer]);
 
                         var yAxisScale = d3.scale.linear()
-                        .domain([0, maxHeight])
+                        .domain([0, maxHeight+(maxHeight/10)])
                         .range([h-buffer, 0]);
 
                         var xScale = d3.scale.linear()
-                        .domain([minAge, maxAge+1])         // +1 to include room for last bar
+                        .domain([minAge-1, maxAge+1])         // +1 to include room for last bar
                         .range([divBorder, divWidth-divBorder]);
 
                         var xAxisScale = d3.scale.linear()
-                        .domain([minAge, maxAge+1])         // +1 to include room for last bar
+                        .domain([minAge-1, maxAge+1])         // +1 to include room for last bar
                         .range([divBorder, divWidth-divBorder]);
 
                         var svg = d3.select("#figure3")
@@ -708,7 +701,7 @@
 
                         svg.append("g")
                         .attr("class", "axis")
-                        .attr("transform", "translate(" + 0 + ", " + (h-45) + ")")
+                        .attr("transform", "translate(" + 0 + ", " + (h-buffer) + ")")
                         .call(xAxis);    
                     </script>
                 </div>
@@ -1132,6 +1125,7 @@
                             .enter()
                             .append("rect")
                             .attr({
+                                id: "drugRect",
                                 width: function(d) { 
                                     if(!isNaN(parseInt(d[2]))){
                                         return (xScale(parseInt(d[2]))); 

@@ -45,6 +45,17 @@ rect:hover {
     fill: blue;
 }
 
+#drugRect:hover {
+    fill: red;
+}
+
+.axis {
+    stroke: black;
+    fill: none;
+    stroke-width: 0.3 px;
+}
+
+
 * {
 	font-family: sans-serif;
 }
@@ -53,7 +64,7 @@ h1, h2, h3 {
 	color: #222;
 }
 
-#header h3 {
+#header h3 { 
 	margin-bottom: 0;
 }
 
